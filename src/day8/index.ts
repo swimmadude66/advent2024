@@ -42,15 +42,34 @@ function collectPairs(map: string[][]): Record<string, [Pos, Pos][]> {
   return pairs
 }
 
+function isInBounds({x, y}: Pos, maxX: number, maxY: number): boolean {
+  return  y >= 0 && y < maxY && x >= 0 && x < maxX
+}
+
 
 function calculateAntinodes(posA: Pos, posB: Pos, maxX: number, maxY: number): Pos[] {
   const xDist = posB.x - posA.x
   const yDist = posB.y - posA.y
   // const distance = Math.sqrt(Math.pow(xDist,2) + Math.pow(yDist,2))
   const antinodes = [ {x: posB.x + xDist, y: posB.y + yDist}, {x: posA.x - xDist, y: posA.y - yDist} ]
-  return antinodes.filter(({x, y}) => 
-    y >= 0 && y < maxY && x >= 0 && x < maxX
-  )
+  return antinodes.filter((a) => isInBounds(a, maxX, maxY))
+}
+
+function calculatePartTwoAntinodes(posA: Pos, posB: Pos, maxX: number, maxY: number): Pos[] {
+  const xDist = posB.x - posA.x
+  const yDist = posB.y - posA.y
+  const antinodes = [ ]
+  let originA = posA
+  while (isInBounds(originA, maxX, maxY)) {
+    antinodes.push(originA);
+    originA = {x: originA.x - xDist, y: originA.y - yDist}
+  }
+  let originB = posB
+  while (isInBounds(originB, maxX, maxY)) {
+    antinodes.push(originB);
+    originB = {x: originB.x + xDist, y: originB.y + yDist}
+  }
+  return antinodes
 }
 
 function main() {
@@ -63,7 +82,16 @@ function main() {
     })
   })
   const uniqLocations = new Set(allAntinodes.map(({x, y}) => `${x},${y}`))
-  console.log({uniqLocations: uniqLocations})
+  console.log({uniqLocations})
+
+  const part2 = Object.values(pairMap).flatMap((pairs) => {
+    return pairs.flatMap(([posA, posB]) => {
+      return calculatePartTwoAntinodes(posA, posB, maxX, maxY)
+    })
+  })
+  const pt2Locations = new Set(part2.map(({x, y}) => `${x},${y}`))
+  console.log({pt2Locations})
+  
 }
 
 function debug() {
